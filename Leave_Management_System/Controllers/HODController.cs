@@ -1,13 +1,16 @@
-﻿using Leave_Management_System.Models.Class;
+﻿
+using Leave_Management_System.Models.Class;
 using Leave_Management_System.Models.Context;
 using Leave_Management_System.Models.ViewModel;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 
 namespace Leave_Management_System.Controllers
 {
@@ -16,20 +19,32 @@ namespace Leave_Management_System.Controllers
         private readonly LeaveDbContext _context;
         private readonly UserManager<IdentityUser> userManager;
         private readonly SignInManager<IdentityUser> signInManager;
+        private readonly RoleManager<IdentityRole> roleManager;
         public HODController(LeaveDbContext context, UserManager<IdentityUser> userManager,
+            RoleManager<IdentityRole> roleManager,
             SignInManager<IdentityUser> signInManager)
         {
             _context = context;
             this.signInManager = signInManager;
             this.userManager = userManager;
+            this.roleManager = roleManager;
         }
 
         [HttpGet]
+        [Authorize(Roles = "HOD")]
         public IActionResult LeaveRequest()
         {
             return View();
         }
+
+        [Authorize(Roles = "HOD")]
+        public IActionResult HomePageHOD()
+        {
+            return View();
+        }
+
         [HttpPost]
+        [Authorize(Roles = "HOD")]
         public IActionResult LeaveRequest(LeaveRequest leaveRequest)
         {
             string username = User.Identity.Name;
@@ -50,17 +65,19 @@ namespace Leave_Management_System.Controllers
             _context.SaveChangesAsync();
             return View();
         }
+
         [HttpGet]
+        [Authorize(Roles = "HOD")]
         public async Task<IActionResult> ListOfLeaveRequest()
         {
             var hodDeparment = _context.AllUser.Where(x => x.Email == User.Identity.Name).FirstOrDefault();
             List<LeaveHistory> leaveHistories = new List<LeaveHistory>();
             var t = await userManager.GetUsersInRoleAsync("Faculty");
-            var HODDeparment =  _context.AllUser.Where(x => x.Email == User.Identity.Name).FirstOrDefault().Deparment;
+            var HODDeparment = _context.AllUser.Where(x => x.Email == User.Identity.Name).FirstOrDefault().Deparment;
             foreach (var temp in t)
             {
                 var requestedleave = _context.LeaveHistory.Include(l => l.AllUser)
-                .Where(x => (x.AllUser.Email == temp.Email &&x.AllUser.Deparment==HODDeparment && x.HODApproveStatus == "Pending")).FirstOrDefault();
+                .Where(x => (x.AllUser.Email == temp.Email && x.AllUser.Deparment == HODDeparment && x.HODApproveStatus == "Pending")).FirstOrDefault();
                 if (requestedleave != null)
                     leaveHistories.Add(requestedleave);
             }
@@ -84,7 +101,9 @@ namespace Leave_Management_System.Controllers
             }
             return View(allrequest);
         }
+
         [HttpPost]
+        [Authorize(Roles = "HOD")]
         public async Task<JsonResult> AjaxMethod(string name, string leave_id)
         {
             int leave_id_int = int.Parse(leave_id);

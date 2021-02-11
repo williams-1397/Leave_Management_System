@@ -27,9 +27,9 @@ namespace Leave_Management_System.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Pending,Dean,Faculty,admin,HOD")]
-        public  IActionResult OwnProfile()
+        public IActionResult OwnProfile()
         {
-            var userLoginDetail =  userManager.Users.Where(x => x.Email == User.Identity.Name).FirstOrDefault();
+            var userLoginDetail = userManager.Users.Where(x => x.Email == User.Identity.Name).FirstOrDefault();
             var userdetail = _context.AllUser.Where(x => x.Email == userLoginDetail.Email).FirstOrDefault();
 
             OwnProfile ownProfile = new OwnProfile
@@ -40,7 +40,7 @@ namespace Leave_Management_System.Controllers
                 Email = userdetail.Email,
                 City = userdetail.City,
                 MiddleName = userdetail.MiddleName,
-                MobileNo =userdetail.MobileNo,
+                MobileNo = userdetail.MobileNo,
                 MobileNo2 = userdetail.MobileNo2,
                 Name = userdetail.Name,
                 PaidLeave = userdetail.PaidLeave,
@@ -83,7 +83,7 @@ namespace Leave_Management_System.Controllers
                 return View(ownProfile);
 
             }
-           
+
             return View();
         }
         //[HttpGet]
